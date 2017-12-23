@@ -29,7 +29,7 @@ public class MySQLConnection implements DBConnection {
 	// Import java.sql.Connection. Don't use com.mysql.jdbc.Connection.
 	private Connection conn = null;
 
-	private MySQLConnection() {
+	public MySQLConnection() {
 		try {
 			// Forcing the class representing the MySQL driver to load and
 			// initialize.
@@ -218,5 +218,46 @@ public class MySQLConnection implements DBConnection {
 			saveItem(item);
 		}
 		return items;
+	}
+
+	@Override
+	public String getFirstLastName(String userId) {
+		String name = "";
+		try {
+			if (conn != null) {
+				String sql = "SELECT first_name, last_name from users WHERE user_id = ?";
+				PreparedStatement statement = conn.prepareStatement(sql);
+				statement.setString(1, userId);
+				ResultSet rs = statement.executeQuery();
+				if (rs.next()) {
+					name += rs.getString("first_name") + " "
+							+ rs.getString("last_name");
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return name;
+	}
+
+	@Override
+	public boolean verifyLogin(String userId, String password) {
+		try {
+			if (conn == null) {
+				return false;
+			}
+			
+			String sql = "SELECT user_id from users WHERE user_id = ? and password = ?";
+			PreparedStatement statement = conn.prepareStatement(sql);
+			statement.setString(1, userId);
+			statement.setString(2, password);
+			ResultSet rs = statement.executeQuery();
+			if (rs.next()) {
+				return true;
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return false;
 	}
 }
